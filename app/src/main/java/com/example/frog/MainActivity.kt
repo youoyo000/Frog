@@ -24,8 +24,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.ButtonDefaults.buttonColors
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -37,6 +39,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
+
 
 
 class MainActivity : ComponentActivity() {
@@ -59,10 +62,10 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     fun AppScreen(screenW: Int, screenH: Int) {
+        val scale = resources.displayMetrics.density
         var showSecond by rememberSaveable { mutableStateOf(false) } // 單一狀態控制畫面切換
-        val game = remember { Game(CoroutineScope(SupervisorJob()), screenW, screenH) }
+        val game = remember { Game(CoroutineScope(SupervisorJob()), screenW, screenH,scale) }
         // 避免重複初始化 Game
-       // val game = Game(screenW, screenH)
 
         if (showSecond) {
             SecondScreen(
@@ -136,7 +139,7 @@ fun FirstScreen(onNavigateToSecond: () -> Unit) {
             }
         }
         Image(
-            painter = painterResource(id = R.drawable.frog1),
+            painter = painterResource(id = R.drawable.frogff),
             contentDescription = "呱呱",
             modifier = Modifier
                 .size(400.dp)
@@ -157,20 +160,7 @@ fun SecondScreen(m: Modifier, game:Game, onNavigateToFirst: () -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Row {
-            //計時器
-          //  Button(
-           //     onClick = {
-           //         game.Play()
-         //       }
-         //   ) {
-         //       Text(text = "開始")
-         //   }
 
-          //  Text(text = counter.toString(), modifier = m)
-         //   Button(onClick = onNavigateToFirst) {
-         //       Text("返回畫面1")
-       //     }
-       // }
         // 無縫連接邏輯
         if (game.background.x1 <= -game.screenW) {
             game.background.x1 = game.background.x2 + game.screenW
@@ -199,6 +189,19 @@ fun SecondScreen(m: Modifier, game:Game, onNavigateToFirst: () -> Unit) {
                     .fillMaxSize()
                     .offset { IntOffset(game.background.x2, 0) }
             )
+
+            //繪製呱呱
+            val frogImage = arrayListOf(R.drawable.frog1, R.drawable.frog2,R.drawable.frog3)
+
+            Image(
+                painter = painterResource(id = frogImage[game.frog.pictNo]),
+                contentDescription = "跳跳呱",
+                modifier = Modifier
+                    .width(100.dp)
+                    .height(220.dp)
+                    .offset { IntOffset(game.frog.x, game.frog.y) }
+            )
+
 
             // 其他遊戲內容
            Column(
@@ -235,7 +238,7 @@ fun SecondScreen(m: Modifier, game:Game, onNavigateToFirst: () -> Unit) {
     }
 
 // 跳跳蛙
-//val boyImage = arrayListOf(R.drawable.frog2, R.drawable.inshot)
+//val frogImage = arrayListOf(R.drawable.frog2, R.drawable.inshot)
         /*Image(
             painter = painterResource(id = boyImage[game.boy.pictNo]),
             contentDescription = "跳跳蛙",
