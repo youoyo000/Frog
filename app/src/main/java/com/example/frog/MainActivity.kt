@@ -1,6 +1,7 @@
 package com.example.frog
 
 import Game
+import android.app.Activity
 import android.content.pm.ActivityInfo
 import android.hardware.Sensor
 import android.hardware.SensorManager
@@ -39,6 +40,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 
@@ -64,7 +66,10 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     fun AppScreen(screenW: Int, screenH: Int) {
-        val scale = resources.displayMetrics.density
+        // 使用 LocalContext 獲取 Context
+        val context = LocalContext.current
+        val scale = context.resources.displayMetrics.density // 從 Context 獲取 scale
+
         var currentPage by rememberSaveable { mutableStateOf(1) } // 用於追踪當前頁面
         val game = remember { Game(CoroutineScope(SupervisorJob()), screenW, screenH, scale) }
         // 避免重複初始化 Game
@@ -80,74 +85,91 @@ class MainActivity : ComponentActivity() {
                 onNavigateToThird = { currentPage = 3 }  // 切換到第三頁
             )
             3 -> ThirdScreen(
-                onNavigateToSecond = { currentPage = 2 } // 切換回第二頁
+                modifier = Modifier,
+                game = game,
+                onNavigateToFirst = { currentPage = 1 } // 切換回第一頁, 不再切換到第二頁
             )
         }
     }
 
+
     @Composable
     fun FirstScreen(onNavigateToSecond: () -> Unit) {
-        //var msg by remember { mutableStateOf("加速感應器實例") }
         var msg2 by remember { mutableStateOf("") }
 
         val context = LocalContext.current
         val sensorManager = context.getSystemService(SENSOR_SERVICE) as SensorManager
         val accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
 
+        Box(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            // 背景圖片，填充整個螢幕
+            Image(
+                painter = painterResource(id = R.drawable.background),
+                contentDescription = "背景圖",
+                contentScale = ContentScale.FillBounds,
+                modifier = Modifier.fillMaxSize()
+            )
 
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-            //horizontalAlignment = Alignment.CenterHorizontally
-        ) {}
-        Image(
-            painter = painterResource(id = R.drawable.background),
-            contentDescription = "背景圖",
-            contentScale = ContentScale.FillBounds,  //縮放符合螢幕寬度
-            modifier = Modifier,
-        )
-        Row{
-            Column(verticalArrangement = Arrangement.Center,
+            // 垂直排列標題和開始按鈕
+            Column(
                 modifier = Modifier
-                    .offset { IntOffset(0,0)}){
-
+                    .align(Alignment.TopStart) // 标题对齐到左边
+                    //.padding(start = 32.dp, top = 33.dp)
+                    //.offset(x = (-150).dp,y = (-50).dp)// 让标题向右偏移
+                //horizontalAlignment = Alignment.Start
+            ) {
+                // 顯示標題圖像
                 Image(
                     painter = painterResource(id = R.drawable.title),
                     contentDescription = "標題",
-                    //alpha = 0.7f,
-                    modifier = Modifier
-                        .size(500.dp)
-                        .offset { IntOffset(0,0)}
+                    modifier = Modifier.size(500.dp)
                 )
-                Box{
+
+                // 开始按钮和图片重叠部分
+                Box(
+                    modifier = Modifier.align(Alignment.CenterHorizontally) // 确保开始按钮和图片在列中居中
+                ) {
+                    // 开始按钮图片，增大并稍微向上调整
                     Image(
                         painter = painterResource(id = R.drawable.start),
-                        contentDescription = "開始",
+                        contentDescription = "开始",
                         modifier = Modifier
-                            .size(300.dp)
-                            .offset { IntOffset(0,0)}
+                            .size(800.dp) // 增大图片大小
+                            .align(Alignment.Center) // 确保图片居中
+                            .offset(x = (-150).dp,y = (-50).dp) // 向上调整图片的位置，50.dp可以根据需要修改
                     )
-                    Button(onClick = onNavigateToSecond, Modifier
-                        .fillMaxWidth(0.25f)
-                        .fillMaxHeight(0.8f)
-                        .offset { IntOffset(0,0)},
+
+                    // 按钮，覆盖在图片上
+                    Button(
+                        onClick = onNavigateToSecond,
+                        modifier = Modifier
+                            .size(300.dp) // 按钮与图片大小相同
+                            .align(Alignment.Center) // 按钮也居中
+                            .padding(16.dp)  // 设置按钮的内边距
+                            .offset(x = (-150).dp,y = (-50).dp)
+                            .fillMaxWidth(0.2f)
+                            .fillMaxHeight(0.3f),
                         colors = buttonColors(Color.Transparent)
-                    ) { // 點擊跳轉到第二畫面
-                        Text("跳轉畫面2")
-                        Text(msg2)
+                    ) {
+                        Text("2")
                     }
                 }
             }
+
+            // 右侧的青蛙图片，调整位置确保头部与开始按钮图片对齐
             Image(
                 painter = painterResource(id = R.drawable.frogff),
                 contentDescription = "呱呱",
                 modifier = Modifier
                     .size(400.dp)
-                    .offset { IntOffset( 180,250) }
+                    .align(Alignment.BottomEnd)  // 确保青蛙位于底部右侧
+                    .padding(bottom = 32.dp, end = 32.dp)
             )
         }
-
     }
+
 
     @Composable
     fun SecondScreen(m: Modifier, game: Game, onNavigateToFirst: () -> Unit, onNavigateToThird: () -> Unit) {
@@ -252,7 +274,7 @@ class MainActivity : ComponentActivity() {
                     Image(
                         painter = painterResource(id = R.drawable.die),
                         contentDescription = "GG1",
-                        //alpha = 0.2f,
+                        alpha = 0.1f,
                         modifier = Modifier
                             .width(70.dp)  // 寬度為 60
                             .height(90.dp) // 高度為 50
@@ -260,6 +282,134 @@ class MainActivity : ComponentActivity() {
                                 IntOffset(
                                     game.background.x1 + die1OffsetX,
                                     game.frog.y + die1OffsetY
+                                )
+                            }
+                    )
+                    var die2OffsetX = 850 // 魚的初始水平偏移量
+                    val die2OffsetY = 185
+                    Image(
+                        painter = painterResource(id = R.drawable.die),
+                        contentDescription = "GG1",
+                        //alpha = 0.2f,
+                        modifier = Modifier
+                            .width(70.dp)  // 寬度為 60
+                            .height(90.dp) // 高度為 50
+                            .offset {
+                                IntOffset(
+                                    game.background.x1 + die2OffsetX,
+                                    game.frog.y + die2OffsetY
+                                )
+                            }
+                    )
+                    var die3OffsetX = 1650 // 魚的初始水平偏移量
+                    val die3OffsetY = 185
+                    Image(
+                        painter = painterResource(id = R.drawable.die),
+                        contentDescription = "GG1",
+                        alpha = 0.2f,
+                        modifier = Modifier
+                            .width(70.dp)  // 寬度為 60
+                            .height(90.dp) // 高度為 50
+                            .offset {
+                                IntOffset(
+                                    game.background.x1 + die3OffsetX,
+                                    game.frog.y + die3OffsetY
+                                )
+                            }
+                    )
+                    var die4OffsetX = 2050 // 魚的初始水平偏移量
+                    val die4OffsetY = 185
+                    Image(
+                        painter = painterResource(id = R.drawable.die),
+                        contentDescription = "GG1",
+                        alpha = 0.2f,
+                        modifier = Modifier
+                            .width(70.dp)  // 寬度為 60
+                            .height(90.dp) // 高度為 50
+                            .offset {
+                                IntOffset(
+                                    game.background.x1 + die4OffsetX,
+                                    game.frog.y + die4OffsetY
+                                )
+                            }
+                    )
+                    var die5OffsetX = 2750 // 魚的初始水平偏移量
+                    val die5OffsetY = 185
+                    Image(
+                        painter = painterResource(id = R.drawable.die),
+                        contentDescription = "GG1",
+                        alpha = 0.2f,
+                        modifier = Modifier
+                            .width(70.dp)  // 寬度為 60
+                            .height(90.dp) // 高度為 50
+                            .offset {
+                                IntOffset(
+                                    game.background.x1 + die5OffsetX,
+                                    game.frog.y + die5OffsetY
+                                )
+                            }
+                    )
+                    var die6OffsetX = 3150 // 魚的初始水平偏移量
+                    val die6OffsetY = 185
+                    Image(
+                        painter = painterResource(id = R.drawable.die),
+                        contentDescription = "GG1",
+                        alpha = 0.2f,
+                        modifier = Modifier
+                            .width(70.dp)  // 寬度為 60
+                            .height(90.dp) // 高度為 50
+                            .offset {
+                                IntOffset(
+                                    game.background.x1 + die6OffsetX,
+                                    game.frog.y + die6OffsetY
+                                )
+                            }
+                    )
+                    var die7OffsetX = 4100 // 魚的初始水平偏移量
+                    val die7OffsetY = 185
+                    Image(
+                        painter = painterResource(id = R.drawable.die),
+                        contentDescription = "GG1",
+                        alpha = 0.2f,
+                        modifier = Modifier
+                            .width(70.dp)  // 寬度為 60
+                            .height(90.dp) // 高度為 50
+                            .offset {
+                                IntOffset(
+                                    game.background.x1 + die7OffsetX,
+                                    game.frog.y + die7OffsetY
+                                )
+                            }
+                    )
+                    var die8OffsetX = 4400 // 魚的初始水平偏移量
+                    val die8OffsetY = 185
+                    Image(
+                        painter = painterResource(id = R.drawable.die),
+                        contentDescription = "GG1",
+                        alpha = 0.2f,
+                        modifier = Modifier
+                            .width(70.dp)  // 寬度為 60
+                            .height(90.dp) // 高度為 50
+                            .offset {
+                                IntOffset(
+                                    game.background.x1 + die8OffsetX,
+                                    game.frog.y + die8OffsetY
+                                )
+                            }
+                    )
+                    var die9OffsetX = 5000 // 魚的初始水平偏移量
+                    val die9OffsetY = 185
+                    Image(
+                        painter = painterResource(id = R.drawable.die),
+                        contentDescription = "GG1",
+                        alpha = 0.2f,
+                        modifier = Modifier
+                            .width(70.dp)  // 寬度為 60
+                            .height(90.dp) // 高度為 50
+                            .offset {
+                                IntOffset(
+                                    game.background.x1 + die9OffsetX,
+                                    game.frog.y + die9OffsetY
                                 )
                             }
                     )
@@ -291,13 +441,17 @@ class MainActivity : ComponentActivity() {
                                 game.background.x1 -= 190 // 背景圖1向左移動 190 像素
                                 game.background.x2 -= 190 // 背景圖2向左移動 190 像素
                                 moveDistance += 190 // 累計移動距離
-                                flyOffsetX -= 190
                                 game.checkCollision() // 檢測碰撞
 
                                 // 如果累計移動距離達到或超過 190 像素，觸發青蛙跳躍
                                 if (moveDistance >= 190) {
                                     game.frog.fly() // 觸發圖片切換
                                     moveDistance = 0 // 重置移動距離
+                                }
+
+                                // 檢查遊戲是否結束
+                                if (!game.isPlaying) {
+                                    onNavigateToThird()  // 跳轉到第三頁
                                 }
                             },
                             modifier = Modifier
@@ -308,7 +462,6 @@ class MainActivity : ComponentActivity() {
                         ) {
                             Text("跳一格")
                         }
-
                         // 右下角的按鈕
                         Button(
                             onClick = {
@@ -323,6 +476,9 @@ class MainActivity : ComponentActivity() {
                                 if (moveDistance >= 380) {
                                     game.frog.fly() // 觸發青蛙跳躍
                                     moveDistance = 0 // 重置移動距離
+                                }
+                                if (!game.isPlaying) {
+                                    onNavigateToThird()  // 跳轉到第三個頁面
                                 }
                             },
                             modifier = Modifier
@@ -339,34 +495,65 @@ class MainActivity : ComponentActivity() {
         }
     }
     @Composable
-    fun ThirdScreen(onNavigateToSecond: () -> Unit) {
-        Column(
+    fun ThirdScreen(modifier: Modifier, game: Game, onNavigateToFirst: () -> Unit) {
+        val activity = (LocalContext.current as? Activity)
+
+        Box(
             modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+            contentAlignment = Alignment.Center
         ) {
-            Text(text = "成績", modifier = Modifier.padding(16.dp))
+            // 背景图片，填满整个屏幕
             Image(
-                    painter = painterResource(id = R.drawable.memo),
-            contentDescription = "記分板",
-            contentScale = ContentScale.FillBounds,
-            modifier = Modifier
-            // .fillMaxSize()
+                painter = painterResource(id = R.drawable.memo),
+                contentDescription = "記分板",
+                contentScale = ContentScale.FillBounds,
+                modifier = Modifier.fillMaxSize()
             )
 
-            Button(
-                onClick = {
-                    //game.Restart() // 檢測碰撞
-                },
+            // Column 包裹文本和按钮
+            Column(
                 modifier = Modifier
-                   // .align(Alignment.BottomEnd) // 將按鈕對齊到右下角
-                    .padding(16.dp) // 添加距離邊界的內邊距
-                    .fillMaxWidth(0.2f)
-                    .fillMaxHeight(0.2f)
+                    .align(Alignment.Center) // 将 Column 对齐到屏幕中心
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text("跳兩格")
+                // 成绩标题
+                Text(
+                    text = "成績",
+                    fontSize = 36.sp,
+                    modifier = Modifier.padding(bottom = 16.dp) // 适当的底部间距
+                )
+
+                // 显示分数
+                Text(
+                    text = "分數：${game.score}",
+                    fontSize = 36.sp,
+                    modifier = Modifier.padding(bottom = 32.dp) // 底部间距使得按钮不至于太靠近文本
+                )
+
+                // 重新开始按钮
+                Button(
+                    onClick = onNavigateToFirst,
+                    modifier = Modifier
+                        //.fillMaxWidth() // 按钮占据大部分宽度
+                        .padding(bottom = 16.dp) // 按钮和底部之间的间距
+                ) {
+                    Text("重新")
+                }
+
+                // 结束按钮
+                Button(
+                    onClick = {
+                        activity?.finish() // 退出应用
+                    },
+                    //modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("結束")
+                }
             }
         }
     }
+
+
 
 }
