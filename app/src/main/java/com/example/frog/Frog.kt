@@ -9,25 +9,9 @@ class Frog(screenH:Int, scale:Float) {
     var pictNo = 0  //切換圖片
 
     fun fly() {
-        pictNo++
-        if (pictNo > 2) {
+        pictNo++ // 切換到下一張圖片
+        if (pictNo > 1) { // 如果超過最後一張，重置為第一張
             pictNo = 0
         }
     }
 }
-
-/*
-class Frog(screenH:Int, scale:Float) {
-    var w = (100 * scale).toInt()  //呱寬度
-    var h = (220 * scale).toInt()  //呱高度
-    var x = 250  //呱x軸座標
-    var y = screenH - h  //呱y軸座標
-    var pictNo = 0  //切換圖片
-
-    fun () {
-        pictNo++
-        if (pictNo > 2) {
-            pictNo = 0
-        }
-    }
-}*/

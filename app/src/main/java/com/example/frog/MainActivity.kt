@@ -154,6 +154,7 @@ fun SecondScreen(m: Modifier, game:Game, onNavigateToFirst: () -> Unit) {
     val counter by game.state.collectAsState() // 從 Game 取得計時器狀態
     var msg by remember { mutableStateOf("遊戲開始") }
 
+
     Column(
         modifier = m.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
@@ -191,7 +192,7 @@ fun SecondScreen(m: Modifier, game:Game, onNavigateToFirst: () -> Unit) {
             )
 
             //繪製呱呱
-            val frogImage = arrayListOf(R.drawable.frog1, R.drawable.frog2,R.drawable.frog3)
+            val frogImage = arrayListOf(R.drawable.frog1, R.drawable.frog2)
 
             Image(
                 painter = painterResource(id = frogImage[game.frog.pictNo]),
@@ -208,32 +209,49 @@ fun SecondScreen(m: Modifier, game:Game, onNavigateToFirst: () -> Unit) {
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-               Button(
-                   onClick = {
-                       if (msg=="遊戲開始"|| msg =="遊戲繼續"){
-                           msg = "遊戲暫停"
-                           game.Play()
-                       }
-                       else if (msg=="遊戲暫停"){
-                           msg = "遊戲繼續"
-                           game.isPlaying = false
-                       }else{  //重新開始遊戲
-                           msg = "遊戲暫停"
-                           game.Restart()
-                       }
-                   },
-                   modifier = m
-               ) {
-                   Text(text = msg)
-
-               }
-
                 Text(text = counter.toString())
 
                Button(onClick = onNavigateToFirst) {
                     Text("返回主畫面")
                 }
-            }
+               var moveDistance = 0
+               Button(
+                   onClick = {
+                       game.Play()
+                       game.background.x1 -= 380
+                       game.background.x2 -= 380
+                       moveDistance += 380 // 累加移動距離
+
+                       // 每當累積移動距離達到或超過 380，觸發青蛙跳躍
+                       if (moveDistance >= 380) {
+                           game.frog.fly()
+                           moveDistance = 0 // 重置移動距離
+                       }
+                   },
+                   modifier = m
+               ) {
+                   Text("跳兩格")
+               }
+               Button(
+                   onClick = {
+                       game.Play() // 開始遊戲
+                       game.background.x1 -= 190 // 背景圖1向左移動 190 像素
+                       game.background.x2 -= 190 // 背景圖2向左移動 190 像素
+                       moveDistance += 190 // 累計移動距離
+
+                       // 如果累計移動距離達到或超過 190 像素，觸發青蛙跳躍
+                       if (moveDistance >= 190) {
+                           game.frog.fly() // 觸發圖片切換
+                           moveDistance = 0 // 重置移動距離
+                       }
+                   },
+                   modifier = m
+               ) {
+                   Text("跳一格")
+               }
+
+
+           }
         }
     }
 
