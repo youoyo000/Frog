@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.ButtonDefaults.buttonColors
@@ -153,6 +154,7 @@ fun FirstScreen(onNavigateToSecond: () -> Unit) {
 fun SecondScreen(m: Modifier, game:Game, onNavigateToFirst: () -> Unit) {
     val counter by game.state.collectAsState() // 從 Game 取得計時器狀態
     var msg by remember { mutableStateOf("遊戲開始") }
+    var moveDistance = 0
 
 
     Column(
@@ -204,6 +206,8 @@ fun SecondScreen(m: Modifier, game:Game, onNavigateToFirst: () -> Unit) {
             )
 
 
+
+
             // 其他遊戲內容
            Column(
                 verticalArrangement = Arrangement.Center,
@@ -214,61 +218,62 @@ fun SecondScreen(m: Modifier, game:Game, onNavigateToFirst: () -> Unit) {
                Button(onClick = onNavigateToFirst) {
                     Text("返回主畫面")
                 }
-               var moveDistance = 0
-               Button(
-                   onClick = {
-                       game.Play()
-                       game.background.x1 -= 380
-                       game.background.x2 -= 380
-                       moveDistance += 380 // 累加移動距離
-
-                       // 每當累積移動距離達到或超過 380，觸發青蛙跳躍
-                       if (moveDistance >= 380) {
-                           game.frog.fly()
-                           moveDistance = 0 // 重置移動距離
-                       }
-                   },
-                   modifier = m
-               ) {
-                   Text("跳兩格")
-               }
-               Button(
-                   onClick = {
-                       game.Play() // 開始遊戲
-                       game.background.x1 -= 190 // 背景圖1向左移動 190 像素
-                       game.background.x2 -= 190 // 背景圖2向左移動 190 像素
-                       moveDistance += 190 // 累計移動距離
-
-                       // 如果累計移動距離達到或超過 190 像素，觸發青蛙跳躍
-                       if (moveDistance >= 190) {
-                           game.frog.fly() // 觸發圖片切換
-                           moveDistance = 0 // 重置移動距離
-                       }
-                   },
-                   modifier = m
-               ) {
-                   Text("跳一格")
-               }
-
-
            }
+            Box(
+                modifier = Modifier
+                    .fillMaxSize() // 讓容器填滿螢幕
+            ) {
+                // 左下角的按鈕
+                Button(
+                    onClick = {
+                        game.Play() // 開始遊戲
+                        game.background.x1 -= 190 // 背景圖1向左移動 190 像素
+                        game.background.x2 -= 190 // 背景圖2向左移動 190 像素
+                        moveDistance += 190 // 累計移動距離
+
+                        // 如果累計移動距離達到或超過 190 像素，觸發青蛙跳躍
+                        if (moveDistance >= 190) {
+                            game.frog.fly() // 觸發圖片切換
+                            moveDistance = 0 // 重置移動距離
+                        }
+                    },
+                    modifier = Modifier
+                        .align(Alignment.BottomStart) // 將按鈕對齊到左下角
+                        .padding(16.dp) // 添加距離邊界的內邊距
+                        .fillMaxWidth(0.2f)
+                        .fillMaxHeight(0.2f)
+                ) {
+                    Text("跳一格")
+                }
+
+                // 右下角的按鈕
+                Button(
+                    onClick = {
+                        game.Play()
+                        game.background.x1 -= 380 // 背景圖1向左移動 380 像素
+                        game.background.x2 -= 380 // 背景圖2向左移動 380 像素
+                        moveDistance += 380 // 累計移動距離
+
+                        // 每當累計移動距離達到或超過 380，觸發青蛙跳躍
+                        if (moveDistance >= 380) {
+                            game.frog.fly() // 觸發青蛙跳躍
+                            moveDistance = 0 // 重置移動距離
+                        }
+                    },
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd) // 將按鈕對齊到右下角
+                        .padding(16.dp) // 添加距離邊界的內邊距
+                        .fillMaxWidth(0.2f)
+                        .fillMaxHeight(0.2f)
+                ) {
+                    Text("跳兩格")
+                }
+            }
+
+
+
         }
     }
-
-// 跳跳蛙
-//val frogImage = arrayListOf(R.drawable.frog2, R.drawable.inshot)
-        /*Image(
-            painter = painterResource(id = boyImage[game.boy.pictNo]),
-            contentDescription = "跳跳蛙",
-            modifier = Modifier
-                .width(100.dp)
-                .height(220.dp)
-                .offset { IntOffset(game.boy.x, game.boy.y) }
-        )*/
-
-        // 返回按鈕
-
     }
-
-}}
-
+}
+}
